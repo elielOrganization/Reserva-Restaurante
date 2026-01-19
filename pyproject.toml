@@ -1,0 +1,18 @@
+[project]
+name = "reserva-restaurante"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "ElielDev",email = "elielbesayp@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pymongo (>=4.16.0,<5.0.0)",
+    "flet (>=0.80.2,<0.81.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
