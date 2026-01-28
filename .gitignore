@@ -1,0 +1,32 @@
+# --- Entorno de Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# --- Gestión de Dependencias (Poetry/Pip) ---
+# Se recomienda subir poetry.lock, pero puedes ignorar la caché
+.pytest_cache/
+.mypy_cache/
+
+# --- IDEs y Editores ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Sistema Operativo ---
+.DS_Store
+Thumbs.db
+
+# --- Archivos de Base de Datos y Logs ---
+*.sqlite3
+*.log
+
+# --- Imágenes y Media (Opcional) ---
+# Descomenta las siguientes líneas si NO quieres subir las imágenes de los restaurantes
+# images/banner/
+# images/restaurantes/
