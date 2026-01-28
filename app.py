@@ -2,6 +2,8 @@ import flet as ft
 from views.login_view import LoginView
 from views.register_view import RegisterView
 from views.main_view import MainView
+from views.restaurant_view import RestauranteView
+from services.mongo_service import cargar_restaurantes
 
 
 def main(page: ft.Page):
@@ -11,6 +13,10 @@ def main(page: ft.Page):
     page.title = "Sistema de Reservas - Restaurante"
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+
+    restaurantes = cargar_restaurantes()
+    for r in restaurantes:
+        print(r.nombre, r.direccion)
     
     def show_login(e=None):
         """Muestra la vista de login"""
@@ -34,6 +40,10 @@ def main(page: ft.Page):
         page.clean()
         main_view = MainView(page, username=username, on_logout_click=show_login)
         page.add(main_view.build())
+    
+    def show_restaurant():
+        page.clean()
+        restaurant_view = RestauranteView(page,  )
     
     # Mostrar login inicialmente
     show_login()
