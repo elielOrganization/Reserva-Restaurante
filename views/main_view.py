@@ -7,14 +7,14 @@ class RestaurantCard(ft.Container):
         super().__init__()
         self.padding = 10
         self.ink = True
-        self.restaurante_obj = restaurante_obj  # Objeto íntegro de la BD
+        self.restaurante_obj = restaurante_obj 
         self.on_click = lambda _: on_click_action(self.restaurante_obj)
 
         self.content = ft.Column(
             controls=[
                 ft.Container(
                     content=ft.Image(
-                        src=self.restaurante_obj.imagen_url, # Acceso por atributo .
+                        src=self.restaurante_obj.imagen_url, 
                         border_radius=ft.border_radius.all(15),
                         width=280,
                         height=200,
@@ -29,7 +29,7 @@ class RestaurantCard(ft.Container):
                 ),
                 ft.Container(
                     content=ft.Text(
-                        self.restaurante_obj.nombre, # Acceso por atributo .
+                        self.restaurante_obj.nombre, 
                         weight=ft.FontWeight.BOLD, 
                         size=18
                     ),
@@ -42,13 +42,14 @@ class RestaurantCard(ft.Container):
         self.height = 320
 
 class MainView:
-    def __init__(self, page: ft.Page, on_logout_click=None, username=None, restaurantes=None):
+    def __init__(self, page: ft.Page, on_logout_click=None, username=None, restaurantes=None,  on_restaurant_click=None):
         self.page = page
         self.page.padding = 0
         self.page.spacing = 0
         self.on_logout_click = on_logout_click
+        self.on_restaurant_click = on_restaurant_click
         self.username = username
-        self.restaurantes = restaurantes # Lista de objetos originales
+        self.restaurantes = restaurantes 
 
         # Buscador
         self.search_field = ft.TextField(
@@ -95,10 +96,8 @@ class MainView:
         self.page.update()
 
     def _on_restaurant_click(self, restaurante_obj):
-        """Aquí tienes acceso a TODO el objeto de la BD"""
-        print(f"ID: {restaurante_obj.id}")
-        print(f"Nombre: {restaurante_obj.nombre}")
-        print(f"Horario: {restaurante_obj.horario}")
+        if self.on_restaurant_click:
+            self.on_restaurant_click(restaurante_obj, self.username, self.on_logout_click)
 
     def build(self) -> ft.Column:
         # LLAMADA A LA UTILIDAD CON NAVEGACIÓN

@@ -1,22 +1,23 @@
 import flet as ft
 from typing import Callable
-from models.restaurant_model import Restaurante, Horario  # Tu dataclass anterior
+from models.restaurant_model import Restaurante, Horario
+from utils.utilidades import create_header
 
 class RestauranteView:
-    def __init__(self, page: ft.Page, restaurante_data: Restaurante, on_reserva_confirm: Callable = None):
+    def __init__(self, page: ft.Page, restaurante_data: Restaurante, on_reserva_confirm: Callable = None, username = None, on_logout_click=None):
         self.page = page
         self.restaurante = restaurante_data
         self.on_reserva_confirm = on_reserva_confirm
+        self.username = username
+        self.on_logout_click = on_logout_click
         
         # Campos de formulario reserva
         self.fecha_input = ft.TextField(
             label="Fecha", 
-            prefix_icon=ft.icons.CALENDAR_TODAY,
             width=250
         )
         self.hora_input = ft.TextField(
             label="Hora", 
-            prefix_icon=ft.icons.ACCESS_TIME,
             width=250
         )
         
@@ -24,30 +25,18 @@ class RestauranteView:
 
     def _build_components(self):
         """Inicializa componentes visuales con datos del restaurante"""
-        # Imagen principal
+        # Imagen principal (Ajustada para ser más prominente)
         self.img_principal = ft.Image(
-            src=self.restaurante.imagenes[0] if self.restaurante.imagenes else "placeholder.jpg",
-            width=300,
-            height=200,
-            fit=ft.ImageFit.COVER,
+            src=self.restaurante.imagenes,
+            height=400,  
+            expand=True,
+            fit=ft.BoxFit.COVER, 
             border_radius=10
         )
         
-        # Galería pequeña
-        self.galeria_imgs = [
-            ft.Image(
-                src=img, 
-                width=80, 
-                height=80, 
-                fit=ft.ImageFit.COVER, 
-                border_radius=8
-            )
-            for img in self.restaurante.imagenes[1:4]
-        ]
-        
         # Info del restaurante
         self.nombre_text = ft.Text(self.restaurante.nombre, size=24, weight=ft.FontWeight.BOLD)
-        self.direccion_text = ft.Text(self.restaurante.direccion, size=14, color=ft.colors.GREY_700)
+        self.direccion_text = ft.Text(self.restaurante.direccion, size=14, color=ft.Colors.GREY_700)
         self.telefono_text = ft.Text(f"📞 {self.restaurante.telefono}", size=14)
         self.aforo_text = ft.Text(f"👥 Capacidad: {self.restaurante.aforo_maximo}", size=14)
         self.horario_text = ft.Text(
@@ -97,17 +86,28 @@ class RestauranteView:
 
     def _show_snack(self, message: str, success: bool = False):
         """Muestra snackbar con feedback"""
-        bg_color = ft.colors.GREEN_600 if success else ft.colors.RED_600
+        bg_color = ft.Colors.GREEN_600 if success else ft.Colors.RED_600
         snack = ft.SnackBar(
-            content=ft.Text(message, color=ft.colors.WHITE, size=16),
+            content=ft.Text(message, color=ft.Colors.WHITE, size=16),
             bgcolor=bg_color
         )
-        self.page.show_dialog(snack)
+        self.page.overlay.append(snack)
+        snack.open = True
         self.page.update()
 
-    def build(self) -> ft.Column:
-        """Construye la vista completa del restaurante"""
-        # Sección info izquierda
+    def build(self) -> ft.Container:
+        """Construye la vista completa con padding y proporciones ajustadas"""
+        header = create_header(
+            username=self.username, 
+            on_logout_click=self.on_logout_click,
+        )
+        # Columna 1: Imagen principal
+        col_imagen = ft.Container(
+            content=self.img_principal,
+            col={"sm": 12, "md": 6, "lg": 6},
+        )
+        
+        # Columna 2: Información del restaurante
         info_col = ft.Column([
             self.nombre_text,
             self.direccion_text,
@@ -117,13 +117,13 @@ class RestauranteView:
             self.horario_text
         ], spacing=8)
         
-        # Galería
-        galeria = ft.Row(self.galeria_imgs, wrap=True, spacing=8)
-        
-        # Sección izquierda completa (info + imágenes)
-        izquierda = ft.Column([self.img_principal, galeria], spacing=10)
-        
-        # Formulario reserva derecha
+        col_info = ft.Container(
+            content=info_col,
+            padding=ft.padding.only(top=40),
+            col={"sm": 12, "md": 12, "lg": 6},
+        )
+
+        # Columna 3: Formulario de reserva
         formulario = ft.Column([
             ft.Text("Reserva", size=20, weight=ft.FontWeight.BOLD),
             self.fecha_input,
@@ -132,23 +132,32 @@ class RestauranteView:
             ft.ElevatedButton(
                 "Confirmar reserva",
                 on_click=self._on_confirmar_reserva,
-                bgcolor=ft.colors.GREEN_600,
-                color=ft.colors.WHITE,
+                bgcolor=ft.Colors.GREEN_600,
+                color=ft.Colors.WHITE,
                 width=250,
                 height=45
             )
         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=12)
         
-        # Layout principal
-        contenido = ft.Row([
-            ft.Column([info_col, izquierda], col={"sm": 8}, spacing=20),
-            ft.Container(
-                formulario,
-                col={"sm": 4},
-                padding=20,
-                border=ft.border.all(2, ft.colors.GREEN_400),
-                border_radius=12
-            )
-        ], vertical_alignment=ft.CrossAxisAlignment.START)
+        col_formulario = ft.Container(
+            content=formulario,
+            padding=ft.padding.only(top=40),
+            col={"sm": 12, "md": 6, "lg": 4},
+            border=ft.border.all(2, ft.Colors.GREEN_400),
+            border_radius=12
+        )
         
-        return ft.Column([contenido], horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+        # Layout principal con ResponsiveRow
+        contenido = ft.ResponsiveRow([
+            header,
+            col_imagen,
+            col_info,
+            col_formulario
+        ], spacing=20, run_spacing=20)
+        
+        # Retornamos un Container con padding para que no toque los bordes de la ventana
+        return ft.Container(
+            content=ft.Column([contenido], scroll=ft.ScrollMode.AUTO),
+            # padding=ft.padding.only(top=40, left=20, right=20),
+            expand=True
+        )
