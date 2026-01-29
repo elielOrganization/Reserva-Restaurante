@@ -1,4 +1,5 @@
 import flet as ft
+from utils.utilidades import create_header
 
 class RestaurantCard(ft.Container):
     """Componente reutilizable para las tarjetas de restaurante usando el objeto BD directamente"""
@@ -98,21 +99,13 @@ class MainView:
         print(f"ID: {restaurante_obj.id}")
         print(f"Nombre: {restaurante_obj.nombre}")
         print(f"Horario: {restaurante_obj.horario}")
-        # Aquí puedes hacer: self.page.go(f"/reserva/{restaurante_obj.id}")
 
     def build(self) -> ft.Column:
-        # --- HEADER ---
-        header = ft.Container(
-            bgcolor="#1b5e20",
-            height=100,
-            padding=ft.padding.symmetric(horizontal=40),
-            content=ft.Row(
-                [
-                    ft.Image(src="./images/banner/logo.png", height=80),
-                    ft.TextButton("MIS RESERVAS", style=ft.ButtonStyle(color=ft.Colors.WHITE)),
-                ],
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-            ),
+        # LLAMADA A LA UTILIDAD CON NAVEGACIÓN
+        header = create_header(
+            username=self.username, 
+            on_logout_click=self.on_logout_click,
+            # on_reservas_click=lambda _: self.page.go("/mis_reservas") # <-- Cambia la ruta por la tuya
         )
 
         # --- BANNER ---
