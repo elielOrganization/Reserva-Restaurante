@@ -1,17 +1,19 @@
 import flet as ft
 
 class RestaurantCard(ft.Container):
-    """Componente reutilizable para las tarjetas de restaurante"""
-    def __init__(self, nombre, imagen_url, on_click_action):
+    """Componente reutilizable para las tarjetas de restaurante usando el objeto BD directamente"""
+    def __init__(self, on_click_action, restaurante_obj):
         super().__init__()
         self.padding = 10
         self.ink = True
-        self.on_click = on_click_action
+        self.restaurante_obj = restaurante_obj  # Objeto íntegro de la BD
+        self.on_click = lambda _: on_click_action(self.restaurante_obj)
+
         self.content = ft.Column(
             controls=[
                 ft.Container(
                     content=ft.Image(
-                        src=imagen_url,
+                        src=self.restaurante_obj.imagen_url, # Acceso por atributo .
                         border_radius=ft.border_radius.all(15),
                         width=280,
                         height=200,
@@ -25,11 +27,15 @@ class RestaurantCard(ft.Container):
                     )
                 ),
                 ft.Container(
-                    content=ft.Text(nombre, weight=ft.FontWeight.BOLD, size=18),
+                    content=ft.Text(
+                        self.restaurante_obj.nombre, # Acceso por atributo .
+                        weight=ft.FontWeight.BOLD, 
+                        size=18
+                    ),
                     padding=ft.padding.only(top=10),
                 ),
             ],
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER, # Centrar texto bajo imagen
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
         )
         self.width = 300
         self.height = 320
@@ -37,79 +43,62 @@ class RestaurantCard(ft.Container):
 class MainView:
     def __init__(self, page: ft.Page, on_logout_click=None, username=None, restaurantes=None):
         self.page = page
-        # Configuración de página para eliminar márgenes laterales
         self.page.padding = 0
         self.page.spacing = 0
         self.on_logout_click = on_logout_click
         self.username = username
-        self.restaurantes = restaurantes
-        
-        # Componente de búsqueda centrado y estilizado
+        self.restaurantes = restaurantes # Lista de objetos originales
+
+        # Buscador
         self.search_field = ft.TextField(
             hint_text="Buscar restaurantes...",
             border_radius=25,
             filled=True,
             bgcolor=ft.Colors.WHITE,
             color=ft.Colors.BLACK87,
-            text_style=ft.TextStyle(size=16),
             width=600, 
             height=50,
             on_change=self._on_search_change
         )
 
-        # Carga de datos de restaurantes
-        self.restaurantes_data = []
-        if self.restaurantes:
-            for r in self.restaurantes:
-                self.restaurantes_data.append({
-                    "nombre": r.nombre,
-                    "img": r.imagen_url
-                })
-        else:
-            # Fallback con tus rutas de imágenes locales según tu estructura
-            self.restaurantes_data = [
-                {"nombre": "Restaurante El Sol", "img": "./images/restaurantes/principal_sol.png"},
-                {"nombre": "Carcas", "img": "./images/restaurantes/principal_carcas.png"},
-                {"nombre": "La Paella Dorada", "img": "./images/restaurantes/principal_paella.png"},
-            ]
-        
-        # Grid de restaurantes alineado al centro
+        # Grid inicial con todos los objetos
         self.grid_restaurantes = ft.ResponsiveRow(
-            [
-                ft.Container(
-                    col={"sm": 12, "md": 6, "lg": 4}, 
-                    content=card, 
-                    alignment=ft.Alignment.CENTER
-                )
-                for card in self._generar_tarjetas(self.restaurantes_data)
-            ],
+            controls=self._generar_tarjetas(self.restaurantes),
             alignment=ft.MainAxisAlignment.CENTER,
             run_spacing=20,
         )
 
-    def _generar_tarjetas(self, lista_datos):
+    def _generar_tarjetas(self, lista_objetos):
+        """Crea los contenedores del grid usando los objetos de la BD"""
+        if not lista_objetos:
+            return []
         return [
-            RestaurantCard(
-                r["nombre"], 
-                r["img"], 
-                lambda e, n=r["nombre"]: self._on_restaurant_click(n)
-            ) for r in lista_datos
+            ft.Container(
+                col={"sm": 12, "md": 6, "lg": 4}, 
+                content=RestaurantCard(
+                    restaurante_obj=obj, 
+                    on_click_action=self._on_restaurant_click
+                ), 
+                alignment=ft.Alignment.CENTER
+            ) for obj in lista_objetos
         ]
 
     def _on_search_change(self, e):
+        """Filtra directamente sobre los atributos del objeto"""
         query = self.search_field.value.lower() if self.search_field.value else ""
         filtrados = [
-            r for r in self.restaurantes_data 
-            if query in r["nombre"].lower()
+            r for r in self.restaurantes 
+            if query in r.nombre.lower()
         ]
-        self.grid_restaurantes.controls = [
-            ft.Container(col={"sm": 12, "md": 6, "lg": 4}, content=card, alignment=ft.Alignment.CENTER)
-            for card in self._generar_tarjetas(filtrados)
-        ]
+        self.grid_restaurantes.controls = self._generar_tarjetas(filtrados)
         self.page.update()
 
-    def _on_restaurant_click(self, nombre):
-        print(f"Navegando a: {nombre}")
+    def _on_restaurant_click(self, restaurante_obj):
+        """Aquí tienes acceso a TODO el objeto de la BD"""
+        print(f"ID: {restaurante_obj.id}")
+        print(f"Nombre: {restaurante_obj.nombre}")
+        print(f"Horario: {restaurante_obj.horario}")
+        # Aquí puedes hacer: self.page.go(f"/reserva/{restaurante_obj.id}")
 
     def build(self) -> ft.Column:
         # --- HEADER ---
@@ -126,19 +115,17 @@ class MainView:
             ),
         )
 
-        # --- BANNER CON BUSCADOR (Ajuste central) ---
+        # --- BANNER ---
         search_section = ft.Container(
             height=350,
             content=ft.Stack([
                 ft.Image(
                     src="./images/banner/banner.png", 
                     fit=ft.BoxFit.COVER,
-                    width=2000, # Valor alto para asegurar que cubra todo el ancho
+                    width=2000, 
                     height=350,
                 ),
-                # Superposición para mejorar contraste
                 ft.Container(bgcolor=ft.Colors.with_opacity(0.1, ft.Colors.BLACK), expand=True),
-                # Buscador al medio
                 ft.Container(
                     content=self.search_field,
                     alignment=ft.Alignment.CENTER,
@@ -148,17 +135,12 @@ class MainView:
 
         # --- TÍTULO ---
         titulo = ft.Container(
-            content=ft.Text(
-                "RESTAURANTES",
-                size=32,
-                weight=ft.FontWeight.W_600,
-                color="#1b5e20",
-            ),
+            content=ft.Text("RESTAURANTES", size=32, weight=ft.FontWeight.W_600, color="#1b5e20"),
             alignment=ft.Alignment.CENTER,
             padding=ft.padding.only(top=40, bottom=20),
         )
 
-        # --- CONTENEDOR PRINCIPAL DEL GRID ---
+        # --- GRID ---
         grid_container = ft.Container(
             content=self.grid_restaurantes,
             padding=ft.padding.symmetric(horizontal=60),
