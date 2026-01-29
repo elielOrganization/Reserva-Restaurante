@@ -15,8 +15,6 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
 
     restaurantes = cargar_restaurantes()
-    for r in restaurantes:
-        print(r.nombre, r.direccion)
     
     def show_login(e=None):
         """Muestra la vista de login"""
@@ -35,10 +33,11 @@ def main(page: ft.Page):
         page.add(register_view.build())
     
     # Esta parte la tiene que hacer Diego
-    def show_main(username: str):
+    def show_main(username: str, rest_list=None):
         """Muestra la vista principal tras login exitoso"""
         page.clean()
-        main_view = MainView(page, username=username, on_logout_click=show_login)
+        rest_to_pass = rest_list if rest_list else restaurantes
+        main_view = MainView(page, username=username, on_logout_click=show_login, restaurantes=rest_to_pass)
         page.add(main_view.build())
     
     def show_restaurant():

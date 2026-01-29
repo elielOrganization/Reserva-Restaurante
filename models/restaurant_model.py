@@ -19,7 +19,7 @@ class Restaurante:
     horario: Horario
     reservas: List[dict]
     imagen_url: str
-    imagenes: List[str]
+    imagenes: str
 
     def to_dict(self) -> dict:
         d = asdict(self)

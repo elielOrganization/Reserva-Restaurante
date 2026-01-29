@@ -49,7 +49,7 @@ def cargar_restaurantes():
             horario=horario_obj,
             reservas=res.get('reservas', []),
             imagen_url=res.get('imagen_url', ''),
-            imagenes=res.get('imagenes', [])
+            imagenes=res.get('imagenes', '')
         )
         
         restaurantes_lista.append(nuevo_restaurante)
