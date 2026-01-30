@@ -18,7 +18,6 @@ class LoginView:
                 show_toast_msg(self.page, "Usuario y contraseña son requeridos", success=False)
                 return
             
-            # Llamada a la lógica de negocio
             success, msg, logged_username = login_user(username, password)
             
             if success and callable(self.on_login_success):
@@ -29,16 +28,19 @@ class LoginView:
         except Exception as ex:
             show_toast_msg(self.page, f"Error: {str(ex)}", success=False)
 
-    def build(self) -> ft.Column:
+    def build(self):
         """Construye la interfaz gráfica del Login"""
-        
+        # Forzar el color de fondo en la página y actualizar
+        self.page.bgcolor = "#F9F8F5"
+        self.page.update()
+
         # INPUT USUARIO
         self.usuario_input = ft.TextField(
             label="Usuario",
             width=350,
             border_color=ft.Colors.GREY_500,
             label_style=ft.TextStyle(color=ft.Colors.GREY_700),
-            text_style=ft.TextStyle(color=ft.Colors.BLACK), # Texto negro explícito
+            text_style=ft.TextStyle(color=ft.Colors.BLACK),
             cursor_color=ft.Colors.BLACK
         )
 
@@ -54,35 +56,33 @@ class LoginView:
             cursor_color=ft.Colors.BLACK
         )
 
-        # BOTÓN INICIAR SESIÓN
+        # BOTÓN INICIAR SESIÓN (Actualizado con verde GastroBook)
         login_button = ft.ElevatedButton(
-            content=ft.Text("Iniciar Sesión", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD),
+            content=ft.Text("Iniciar Sesión", color=ft.Colors.WHITE, weight="bold"),
             width=350,
             height=50,
             on_click=self._on_login,
-            bgcolor=ft.Colors.BLUE_GREY_900, # Fondo oscuro elegante
+            bgcolor="#225734", 
             style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8))
         )
 
-        # BOTÓN REGISTRO
+        # BOTÓN REGISTRO (Actualizado con naranja GastroBook)
         register_button = ft.TextButton(
-            content=ft.Text("¿No tienes cuenta? Regístrate aquí", color=ft.Colors.BLUE_700),
+            content=ft.Text("¿No tienes cuenta? Regístrate aquí", color="#F1884D"),
             width=350,
             on_click=self.on_register_click,
         )
 
-        # IMAGEN (LOGO)
-        # Al estar en la carpeta 'assets', solo ponemos el nombre del archivo
         logo_image = ft.Image(
             src="./images/banner/logo_login.jpg", 
             width=350,          
-            fit="contain", # Usamos string para evitar error de versión
+            fit="contain",
         )
 
-        # ESTRUCTURA DE LA COLUMNA
-        return ft.Column(
+        # Columna principal
+        columna_login = ft.Column(
             [
-                logo_image, # La imagen va primero
+                logo_image,
                 ft.Divider(height=20, color=ft.Colors.TRANSPARENT),
                 self.usuario_input,
                 self.password_input,
@@ -96,21 +96,25 @@ class LoginView:
             spacing=10,
         )
 
-# --- BLOQUE PARA PROBAR (OPCIONAL) ---
+        # Envolvemos en un Container para asegurar que el color cubra toda la vista
+        return ft.Container(
+            content=columna_login,
+            bgcolor="#F9F8F5",
+            expand=True,
+            alignment=ft.Alignment.CENTER
+        )
+
 def main(page: ft.Page):
     page.title = "Sistema de Reservas - GastroBook"
-    
-    # Configuración visual: Modo Claro (Fondo Blanco)
     page.theme_mode = ft.ThemeMode.LIGHT
-    page.bgcolor = ft.Colors.WHITE
+    page.bgcolor = "#F9F8F5"
     
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    page.update()
     
     login_view = LoginView(page)
     page.add(login_view.build())
 
 if __name__ == "__main__":
-    # Si ejecutas este archivo directamente, le decimos que assets está en la carpeta superior
-    # (Esto es solo para pruebas, al ejecutar app.py no hace falta)
     ft.run(main)

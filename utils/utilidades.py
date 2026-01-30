@@ -1,5 +1,6 @@
 import flet as ft
 
+WHITE = "#FFFFFF"
 def show_toast_msg(self, message: str, success: bool = False):
     if success:
         bg_color = ft.Colors.GREEN_600
@@ -63,9 +64,10 @@ def create_header(username, on_logout_click, on_logo_click, on_reservas_click=No
                 ft.Row(
                     controls=[
                         ft.TextButton(
-                            "MIS RESERVAS", 
-                            style=ft.ButtonStyle(color=ft.Colors.WHITE),
-                            on_click=on_reservas_click
+                            content=ft.Text(
+                                "MIS RESERVAS", 
+                                color=ft.Colors.WHITE, 
+                            ),
                         ),
                         user_menu,
                     ],
