@@ -37,13 +37,13 @@ def main(page: ft.Page):
         """Muestra la vista principal tras login exitoso"""
         page.clean()
         rest_to_pass = rest_list if rest_list else restaurantes
-        main_view = MainView(page, username=username, on_logout_click=show_login, restaurantes=rest_to_pass, on_restaurant_click=show_restaurant)
+        main_view = MainView(page, username=username, on_logout_click=show_login, restaurantes=rest_to_pass, on_restaurant_click=show_restaurant, on_logo_click=show_main)
         page.add(main_view.build())
     
     def show_restaurant(restaurante_obj, username: str, on_logout_click):
         """Muestra la vista de detalles del restaurante"""
         page.clean()
-        restaurant_view = RestauranteView(page, restaurante_data=restaurante_obj, on_reserva_confirm=None, username=username, on_logout_click=on_logout_click)
+        restaurant_view = RestauranteView(page, restaurante_data=restaurante_obj, on_reserva_confirm=None, username=username, on_logout_click=on_logout_click, on_logo_click=show_main)
         page.add(restaurant_view.build())
     
     # Mostrar login inicialmente

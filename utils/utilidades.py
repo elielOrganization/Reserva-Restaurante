@@ -24,9 +24,10 @@ def show_toast_msg(self, message: str, success: bool = False):
 
 import flet as ft
 
-def create_header(username, on_logout_click, on_reservas_click=None):
-    """Genera el header reutilizable para cualquier vista"""
-    
+import flet as ft
+
+def create_header(username, on_logout_click, on_logo_click, on_reservas_click=None):
+    """Genera el header reutilizable con logo clicable usando GestureDetector"""
     user_menu = ft.PopupMenuButton(
         content=ft.Image(
             src="./images/banner/tl.png", 
@@ -39,7 +40,7 @@ def create_header(username, on_logout_click, on_reservas_click=None):
                 icon=ft.Icons.PERSON, 
                 content=ft.Text(f"Usuario: {username}" if username else "Perfil")
             ),
-            ft.PopupMenuItem(), # Divisor
+            ft.PopupMenuItem(), 
             ft.PopupMenuItem(
                 icon=ft.Icons.LOGOUT, 
                 content=ft.Text("Cerrar Sesión"), 
@@ -52,15 +53,19 @@ def create_header(username, on_logout_click, on_reservas_click=None):
         bgcolor="#1b5e20",
         height=100,
         padding=ft.padding.symmetric(horizontal=40),
-        content=ft.Row(
-            [
-                ft.Image(src="./images/banner/logo.png", height=80),
+        content=ft.Row([
+            ft.GestureDetector(
+                content=ft.Image(src="./images/banner/logo.png", height=80),
+                on_tap=on_logo_click, # <--- CAMBIO: Ahora ejecuta la función que le pasemos
+                mouse_cursor=ft.MouseCursor.CLICK,
+            ),
+    
                 ft.Row(
                     controls=[
                         ft.TextButton(
                             "MIS RESERVAS", 
                             style=ft.ButtonStyle(color=ft.Colors.WHITE),
-                            on_click=on_reservas_click # <-- AQUÍ se conecta la acción
+                            on_click=on_reservas_click
                         ),
                         user_menu,
                     ],
@@ -69,3 +74,4 @@ def create_header(username, on_logout_click, on_reservas_click=None):
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
         ),
     )
+

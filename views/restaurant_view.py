@@ -4,12 +4,13 @@ from models.restaurant_model import Restaurante, Horario
 from utils.utilidades import create_header
 
 class RestauranteView:
-    def __init__(self, page: ft.Page, restaurante_data: Restaurante, on_reserva_confirm: Callable = None, username = None, on_logout_click=None):
+    def __init__(self, page: ft.Page, restaurante_data: Restaurante, on_reserva_confirm: Callable = None, username = None, on_logout_click=None, on_logo_click=None):
         self.page = page
         self.restaurante = restaurante_data
         self.on_reserva_confirm = on_reserva_confirm
         self.username = username
         self.on_logout_click = on_logout_click
+        self.on_logo_click = on_logo_click
         
         # Campos de formulario reserva
         self.fecha_input = ft.TextField(
@@ -100,6 +101,8 @@ class RestauranteView:
         header = create_header(
             username=self.username, 
             on_logout_click=self.on_logout_click,
+            # Asegúrate de que on_logo_click esté recibiendo la función del constructor
+            on_logo_click=lambda _: self.on_logo_click(self.username) if self.on_logo_click else None
         )
         # Columna 1: Imagen principal
         col_imagen = ft.Container(

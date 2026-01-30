@@ -42,14 +42,13 @@ class RestaurantCard(ft.Container):
         self.height = 320
 
 class MainView:
-    def __init__(self, page: ft.Page, on_logout_click=None, username=None, restaurantes=None,  on_restaurant_click=None):
+    def __init__(self, page: ft.Page, on_logout_click=None, username=None, restaurantes=None, on_restaurant_click=None, on_logo_click=None):
         self.page = page
-        self.page.padding = 0
-        self.page.spacing = 0
         self.on_logout_click = on_logout_click
         self.on_restaurant_click = on_restaurant_click
+        self.on_logo_click = on_logo_click # <--- Guardamos la función
         self.username = username
-        self.restaurantes = restaurantes 
+        self.restaurantes = restaurantes
 
         # Buscador
         self.search_field = ft.TextField(
@@ -104,8 +103,8 @@ class MainView:
         header = create_header(
             username=self.username, 
             on_logout_click=self.on_logout_click,
-            # on_reservas_click=lambda _: self.page.go("/mis_reservas") # <-- Cambia la ruta por la tuya
-        )
+            # Asegúrate de que on_logo_click esté recibiendo la función del constructor
+            on_logo_click=lambda _: self.on_logo_click(self.username) if self.on_logo_click else None)
 
         # --- BANNER ---
         search_section = ft.Container(
