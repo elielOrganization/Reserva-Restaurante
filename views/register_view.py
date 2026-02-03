@@ -1,6 +1,7 @@
 import flet as ft
 from services.crud_operations import register_user
 from utils.validators import is_nonempty, is_valid_email, is_valid_password, is_valid_phone
+from utils.utilidades import show_toast_msg
 
 class RegisterView:
     def __init__(self, page: ft.Page, on_back_click=None):
@@ -41,76 +42,58 @@ class RegisterView:
         """Limpia los mensajes de error de todos los campos"""
         for field in [self.name_input, self.user_input, self.password_input, 
                       self.confirm_password_input, self.phone_input, self.email_input]:
-            field.error_text = None # Corrección: es error_text, no error
+            field.error = None 
+            
         self.page.update()
 
     def _on_register(self, e):
-        self._clear_errors() # Limpiar errores previos
+        self._clear_errors() 
         
-        try:
-            name = self.name_input.value or ""
-            username = self.user_input.value or ""
-            passwd = self.password_input.value or ""
-            cpasswd = self.confirm_password_input.value or ""
-            phone = self.phone_input.value or ""
-            email = self.email_input.value or ""
+        name = self.name_input.value or ""
+        username = self.user_input.value or ""
+        passwd = self.password_input.value or ""
+        cpasswd = self.confirm_password_input.value or ""
+        phone = self.phone_input.value or ""
+        email = self.email_input.value or ""
 
-            # Validaciones
-            has_error = False
+        # Validaciones
+        has_error = False
 
-            if not is_nonempty(name):
-                self.name_input.error_text = "Nombre requerido"
-                has_error = True
-            
-            if not is_nonempty(username):
-                self.user_input.error_text = "Usuario requerido"
-                has_error = True
-
-            if not is_valid_email(email):
-                self.email_input.error_text = "Email inválido"
-                has_error = True
-
-            if not is_valid_password(passwd):
-                self.password_input.error_text = "Mínimo 6 caracteres"
-                has_error = True
-
-            if passwd != cpasswd:
-                self.confirm_password_input.error_text = "Las contraseñas no coinciden"
-                has_error = True
-
-            if not is_valid_phone(phone):
-                self.phone_input.error_text = "Teléfono inválido"
-                has_error = True
-
-            if has_error:
-                self.page.update()
-                return
-
-            # Si pasa las validaciones, llamar al servicio
-            success, msg = register_user(name, username, email, phone, passwd)
-            
-            if success:
-                self._show_snack("¡Usuario registrado con éxito!", success=True)
-                if callable(self.on_back_click):
-                    # Pequeña pausa para que se vea el mensaje antes de cambiar
-                    import time
-                    time.sleep(1) 
-                    self.on_back_click(e)
-            else:
-                self._show_snack(msg, success=False)
-
-        except Exception as ex:
-            self._show_snack(f"Error: {str(ex)}", success=False)
-
-    def _show_snack(self, message: str, success: bool = False):
-        color = ft.Colors.GREEN_600 if success else ft.Colors.RED_600
+        if not is_nonempty(name):
+            self.name_input.error = "Nombre requerido"
+            has_error = True
         
-        snack = ft.SnackBar(
-            content=ft.Text(message, color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD),
-            bgcolor=color,
-        )
-        # Corrección: Usamos page.open() para mostrar el SnackBar correctamente
-        self.page.open(snack)
+        if not is_nonempty(username):
+            self.user_input.error = "Usuario requerido"
+            has_error = True
+
+        if not is_valid_email(email):
+            self.email_input.error = "Email inválido"
+            has_error = True
+
+        if not is_valid_password(passwd):
+            self.password_input.error = "Mínimo 6 caracteres"
+            has_error = True
+
+        if passwd != cpasswd:
+            self.confirm_password_input.error = "Las contraseñas no coinciden"
+            has_error = True
+
+        if not is_valid_phone(phone):
+            self.phone_input.error = "Teléfono inválido"
+            has_error = True
+
+        if has_error:
+            self.page.update()
+            return
+
+        # Si pasa las validaciones, llamar al servicio
+        success, msg = register_user(name, username, email, phone, passwd)
+
+        show_toast_msg(self, msg, success)
+        
+        if success:
+            self.on_back_click(e)    
 
     def build(self) -> ft.Column:
         # Botón de Registrar (Oscuro y redondeado)
