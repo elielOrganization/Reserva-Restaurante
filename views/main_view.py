@@ -103,7 +103,6 @@ class MainView:
         header = create_header(
             username=self.username, 
             on_logout_click=self.on_logout_click,
-            # Asegúrate de que on_logo_click esté recibiendo la función del constructor
             on_logo_click=lambda _: self.on_logo_click(self.username) if self.on_logo_click else None)
 
         # --- BANNER ---
