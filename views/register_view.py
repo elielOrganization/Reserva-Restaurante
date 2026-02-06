@@ -122,10 +122,10 @@ class RegisterView:
 
         return ft.Column(
             [
-                logo_image, # Imagen arriba
+                logo_image, 
                 ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
                 
-                # Agrupamos campos en un scroll por si la pantalla es pequeña
+                
                 ft.Column(
                     [
                         self.name_input,
@@ -135,7 +135,7 @@ class RegisterView:
                         self.password_input,
                         self.confirm_password_input,
                     ],
-                    spacing=5, # Espacio reducido entre inputs para que quepan
+                    spacing=5, 
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 ),
                 
@@ -146,5 +146,5 @@ class RegisterView:
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             spacing=10,
-            scroll=ft.ScrollMode.AUTO # Scroll por si hay muchos campos
+            scroll=ft.ScrollMode.AUTO
         )
