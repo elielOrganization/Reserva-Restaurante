@@ -42,11 +42,12 @@ class RestaurantCard(ft.Container):
         self.height = 320
 
 class MainView:
-    def __init__(self, page: ft.Page, on_logout_click=None, username=None, restaurantes=None, on_restaurant_click=None, on_logo_click=None):
+    def __init__(self, page: ft.Page, on_logout_click=None, username=None, restaurantes=None, on_restaurant_click=None, on_logo_click=None, on_reservas_click=None):
         self.page = page
         self.on_logout_click = on_logout_click
         self.on_restaurant_click = on_restaurant_click
-        self.on_logo_click = on_logo_click # <--- Guardamos la función
+        self.on_logo_click = on_logo_click
+        self.on_reservas_click = on_reservas_click 
         self.username = username
         self.restaurantes = restaurantes
 
@@ -95,15 +96,20 @@ class MainView:
         self.page.update()
 
     def _on_restaurant_click(self, restaurante_obj):
+        """Maneja el clic en una tarjeta de restaurante"""
         if self.on_restaurant_click:
-            self.on_restaurant_click(restaurante_obj, self.username, self.on_logout_click)
+            # CORREGIDO: Pasamos solo el objeto, el username ya lo gestiona app.py
+            self.on_restaurant_click(restaurante_obj)
 
     def build(self) -> ft.Column:
-        # LLAMADA A LA UTILIDAD CON NAVEGACIÓN
+        # 2. MODIFICADO: Llamada a create_header con todos los parámetros necesarios
         header = create_header(
             username=self.username, 
             on_logout_click=self.on_logout_click,
-            on_logo_click=lambda _: self.on_logo_click(self.username) if self.on_logo_click else None)
+            on_logo_click=lambda _: self.on_logo_click(self.username) if self.on_logo_click else None,
+            # Conectamos el botón de reservas
+            on_reservas_click=lambda: self.on_reservas_click() if self.on_reservas_click else None
+        )
 
         # --- BANNER ---
         search_section = ft.Container(

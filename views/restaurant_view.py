@@ -6,19 +6,18 @@ from utils.utilidades import create_header, show_toast_msg
 from services.crud_operations import registrar_reserva, calcular_reservas_disponible
 
 class RestauranteView:
-    def __init__(self, page: ft.Page, restaurante_data: Restaurante, on_reserva_confirm: Callable = None, username = None, on_logout_click=None, on_logo_click=None):
+    def __init__(self, page: ft.Page, restaurante_data: Restaurante, on_reserva_confirm: Callable = None, username = None, on_logout_click=None, on_logo_click=None, on_reservas_click=None):
         self.page = page
         self.restaurante = restaurante_data
         self.on_reserva_confirm = on_reserva_confirm
         self.username = username
         self.on_logout_click = on_logout_click
         self.on_logo_click = on_logo_click
+        self.on_reservas_click = on_reservas_click
         
-        # --- Atributos de clase ---
         today = datetime.now()
         self.fecha_hoy = today.strftime("%Y-%m-%d")
 
-        # --- Selector de Fecha ---
         self.date_picker = ft.DatePicker(
             first_date=today,
             last_date=today + timedelta(days=90),
@@ -27,7 +26,6 @@ class RestauranteView:
         )
         self.page.overlay.append(self.date_picker)
 
-        # --- Componentes de Formulario ---
         self.fecha_input = ft.TextField(
             label="Fecha", 
             width=250,
@@ -43,21 +41,20 @@ class RestauranteView:
             width=250,
             options=self._get_lista_horas(),
             hint_text="Clic para seleccionar hora",
-            trailing_icon=ft.Icons.ACCESS_TIME 
         )
         
-        # Inicializar opciones de personas para la fecha de hoy
         disponibles_hoy = calcular_reservas_disponible(self.restaurante, self.fecha_hoy)
+        rango_personas = range(1, max(1, disponibles_hoy + 1))
+        
         self.personas_input = ft.Dropdown(
             label="Personas",
             width=150,
-            options=[ft.dropdown.Option(str(i)) for i in range(1, disponibles_hoy + 1)],
+            options=[ft.dropdown.Option(str(i)) for i in rango_personas],
             hint_text="Nº personas"
         )
         
         self._build_components()
 
-    # --- Gestión de Eventos ---
     def _open_date_picker(self, e):
         self.date_picker.open = True
         self.page.update()
@@ -65,29 +62,31 @@ class RestauranteView:
     def _on_fecha_change(self, e):
         self._clear_errors()
 
-        if e.control.value:
-            nueva_fecha = e.control.value.strftime("%Y-%m-%d")
+        if self.date_picker.value:
+            nueva_fecha = self.date_picker.value.strftime("%Y-%m-%d")
             self.fecha_input.value = nueva_fecha
             
             disponibles = calcular_reservas_disponible(self.restaurante, nueva_fecha)
-            nuevas_opciones = [ft.dropdown.Option(str(i)) for i in range(1, disponibles + 1)]
+            nuevas_opciones = [ft.dropdown.Option(str(i)) for i in range(1, max(1, disponibles + 1))]
 
             self.personas_input.options = nuevas_opciones
             self.personas_input.value = None 
             
-        self.date_picker.open = False 
         self.page.update() 
 
     def _on_date_dismiss(self, e):
-        self.date_picker.open = False
-        self.page.update()
+        pass
 
     def _get_lista_horas(self):
         opciones = []
         fmt = "%H:%M"
         try:
-            inicio = datetime.strptime(self.restaurante.horario.apertura, fmt)
-            fin = datetime.strptime(self.restaurante.horario.cierre, fmt)
+            apertura = self.restaurante.horario.apertura if hasattr(self.restaurante.horario, 'apertura') else self.restaurante.horario['apertura']
+            cierre = self.restaurante.horario.cierre if hasattr(self.restaurante.horario, 'cierre') else self.restaurante.horario['cierre']
+            
+            inicio = datetime.strptime(apertura, fmt)
+            fin = datetime.strptime(cierre, fmt)
+            
             actual = inicio
             while actual <= fin:
                 hora_str = actual.strftime(fmt)
@@ -99,8 +98,10 @@ class RestauranteView:
         return opciones
 
     def _build_components(self):
+        img_src = getattr(self.restaurante, 'imagen_url', getattr(self.restaurante, 'imagenes', ''))
+        
         self.img_principal = ft.Image(
-            src=self.restaurante.imagenes,
+            src=img_src,
             height=400,  
             expand=True,
             fit=ft.BoxFit.COVER, 
@@ -111,18 +112,21 @@ class RestauranteView:
         self.direccion_text = ft.Text(self.restaurante.direccion, size=18, color=ft.Colors.GREY_700)
         self.telefono_text = ft.Text(f"📞 {self.restaurante.telefono}", size=18, weight=ft.FontWeight.W_500)
         self.aforo_text = ft.Text(f"👥 Capacidad: {self.restaurante.aforo_maximo} personas", size=18)
+        
+        apertura = self.restaurante.horario.apertura if hasattr(self.restaurante.horario, 'apertura') else self.restaurante.horario['apertura']
+        cierre = self.restaurante.horario.cierre if hasattr(self.restaurante.horario, 'cierre') else self.restaurante.horario['cierre']
+
         self.horario_text = ft.Text(
-            f"Horario: {self.restaurante.horario.apertura} - {self.restaurante.horario.cierre}", 
+            f"Horario: {apertura} - {cierre}", 
             size=22,
             color=ft.Colors.GREEN_700,
             weight=ft.FontWeight.BOLD
         )
 
     def _clear_errors(self):
-        self.fecha_input.error = None
+        self.fecha_input.error_text = None
         self.hora_input.error_text = None
         self.personas_input.error_text = None
-        
         self.page.update()
 
     def _on_confirmar_reserva(self, e):
@@ -131,17 +135,16 @@ class RestauranteView:
         usuario = self.username
         fecha = self.fecha_input.value
         hora = self.hora_input.value
-        fecha_hora_completa = f"{fecha}T{hora}:00"
-        personas = self.personas_input.value
+        personas_val = self.personas_input.value
         restaurante_nombre = self.restaurante.nombre
 
         has_error = False
-        if not personas:
+        if not personas_val:
             self.personas_input.error_text = "Seleccione número de personas"
             has_error = True
 
         if not fecha:
-            self.fecha_input.error = "Fecha requerida"  
+            self.fecha_input.error_text = "Fecha requerida"  
             has_error = True
 
         if not hora:
@@ -152,7 +155,8 @@ class RestauranteView:
             self.page.update()
             return
         
-        personas = int(personas)
+        personas = int(personas_val)
+        fecha_hora_completa = f"{fecha}T{hora}:00"
 
         success, msg = registrar_reserva(usuario, fecha_hora_completa, restaurante_nombre, personas)
 
@@ -160,16 +164,18 @@ class RestauranteView:
 
         if success:
             nueva_reserva = {
-            "fecha_hora": fecha_hora_completa,
-            "estado": "confirmada",
-            "restaurante_nombre": restaurante_nombre,
-            "num_personas": personas,
-            "usuario": usuario,
+                "fecha_hora": fecha_hora_completa,
+                "estado": "confirmada",
+                "restaurante_nombre": restaurante_nombre,
+                "num_personas": personas,
+                "usuario": usuario,
             }
 
-            self.restaurante.reservas.append(nueva_reserva)
+            if hasattr(self.restaurante, 'reservas'):
+                 self.restaurante.reservas.append(nueva_reserva)
+            
             disponibles = calcular_reservas_disponible(self.restaurante, self.fecha_input.value)
-            nuevas_opciones = [ft.dropdown.Option(str(i)) for i in range(1, disponibles + 1)]
+            nuevas_opciones = [ft.dropdown.Option(str(i)) for i in range(1, max(1, disponibles + 1))]
        
             self.personas_input.options = nuevas_opciones
             self.fecha_input.value = self.fecha_hoy
@@ -182,7 +188,8 @@ class RestauranteView:
         header = create_header(
             username=self.username, 
             on_logout_click=self.on_logout_click,
-            on_logo_click=lambda _: self.on_logo_click(self.username) if self.on_logo_click else None
+            on_logo_click=lambda _: self.on_logo_click(self.username) if self.on_logo_click else None,
+            on_reservas_click=lambda: self.on_reservas_click() if self.on_reservas_click else None
         )
 
         reserva_row = ft.Row(
