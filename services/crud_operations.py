@@ -70,6 +70,8 @@ def registrar_reserva(username: str, fech_hora: str, rest_nombre: str, num_pers:
             "usuario": username,
         }
 
+        db.Reservas.insert_one(reserva_doc)
+
         db.Restaurantes.update_one(
             {"nombre": rest_nombre},
             {"$push": {"reservas": reserva_doc}},
@@ -102,7 +104,7 @@ def obtener_reservas_usuario(username: str):
         for restaurante in cursor:
             if "reservas" in restaurante:
                 for reserva in restaurante["reservas"]:
-                    if reserva.get("usuario") == username:
+                    if reserva.get("usuario") == username and reserva.get("estado") == "confirmada":
                         reserva_con_nombre = reserva.copy()
                         if "restaurante_nombre" not in reserva_con_nombre:
                             reserva_con_nombre["restaurante_nombre"] = restaurante.get("nombre")
@@ -116,6 +118,14 @@ def obtener_reservas_usuario(username: str):
 def cancelar_reserva_usuario(username, restaurante_nombre, fecha_hora):
     try:
         db = get_db()
+        db.Reservas.update_one(
+            {
+                "usuario": username, 
+                "restaurante_nombre": restaurante_nombre, 
+                "fecha_hora": fecha_hora
+            },
+            {"$set": {"estado": "cancelada"}}
+        )
         
         resultado = db.Restaurantes.update_one(
             {"nombre": restaurante_nombre},

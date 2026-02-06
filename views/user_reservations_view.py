@@ -12,7 +12,6 @@ class UserReservationsView:
 
     def build(self):
         header = create_header(
-            self.page, 
             self.username, 
             on_logout_click=self.on_logout_click,
             on_logo_click=lambda _: self.on_back_home() if self.on_back_home else None

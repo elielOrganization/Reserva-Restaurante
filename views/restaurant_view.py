@@ -186,7 +186,6 @@ class RestauranteView:
 
     def build(self) -> ft.Container:
         header = create_header(
-            self.page, 
             username=self.username, 
             on_logout_click=self.on_logout_click,
             on_logo_click=lambda _: self.on_logo_click(self.username) if self.on_logo_click else None,

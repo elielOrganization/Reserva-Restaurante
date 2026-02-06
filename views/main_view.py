@@ -42,13 +42,12 @@ class RestaurantCard(ft.Container):
         self.height = 320
 
 class MainView:
-    # 1. AÑADIDO: 'on_reservas_click' al constructor
     def __init__(self, page: ft.Page, on_logout_click=None, username=None, restaurantes=None, on_restaurant_click=None, on_logo_click=None, on_reservas_click=None):
         self.page = page
         self.on_logout_click = on_logout_click
         self.on_restaurant_click = on_restaurant_click
         self.on_logo_click = on_logo_click
-        self.on_reservas_click = on_reservas_click # <--- Guardamos la nueva función
+        self.on_reservas_click = on_reservas_click 
         self.username = username
         self.restaurantes = restaurantes
 
@@ -105,7 +104,6 @@ class MainView:
     def build(self) -> ft.Column:
         # 2. MODIFICADO: Llamada a create_header con todos los parámetros necesarios
         header = create_header(
-            page=self.page,  # IMPORTANTE: Ahora pasamos 'page' primero
             username=self.username, 
             on_logout_click=self.on_logout_click,
             on_logo_click=lambda _: self.on_logo_click(self.username) if self.on_logo_click else None,
