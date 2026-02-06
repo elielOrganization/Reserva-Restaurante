@@ -98,16 +98,15 @@ class MainView:
     def _on_restaurant_click(self, restaurante_obj):
         """Maneja el clic en una tarjeta de restaurante"""
         if self.on_restaurant_click:
-            # CORREGIDO: Pasamos solo el objeto, el username ya lo gestiona app.py
+            
             self.on_restaurant_click(restaurante_obj)
 
     def build(self) -> ft.Column:
-        # 2. MODIFICADO: Llamada a create_header con todos los parámetros necesarios
+       
         header = create_header(
             username=self.username, 
             on_logout_click=self.on_logout_click,
             on_logo_click=lambda _: self.on_logo_click(self.username) if self.on_logo_click else None,
-            # Conectamos el botón de reservas
             on_reservas_click=lambda: self.on_reservas_click() if self.on_reservas_click else None
         )
 

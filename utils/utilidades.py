@@ -53,7 +53,6 @@ def create_header(username, on_logout_click=None, on_logo_click=None, on_reserva
         content=ft.Row([
             ft.GestureDetector(
                 content=ft.Image(src="./images/banner/logo.png", height=80),
-                # El logo ejecuta la acción si existe
                 on_tap=lambda _: on_logo_click(username) if on_logo_click else None, 
                 mouse_cursor=ft.MouseCursor.CLICK,
             ),
@@ -65,8 +64,7 @@ def create_header(username, on_logout_click=None, on_logo_click=None, on_reserva
                             "MIS RESERVAS", 
                             color=ft.Colors.WHITE, 
                         ),
-                        # --- CORRECCIÓN CLAVE AQUÍ ---
-                        # Ahora el botón sí responde al click
+
                         on_click=lambda _: on_reservas_click() if on_reservas_click else None
                     ),
                     user_menu,

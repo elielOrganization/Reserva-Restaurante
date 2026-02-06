@@ -87,7 +87,7 @@ class RegisterView:
             self.page.update()
             return
 
-        # Si pasa las validaciones, llamar al servicio
+        
         success, msg = register_user(name, username, email, phone, passwd)
 
         show_toast_msg(self, msg, success)
@@ -96,7 +96,7 @@ class RegisterView:
             self.on_back_click(e)    
 
     def build(self) -> ft.Column:
-        # Botón de Registrar (Oscuro y redondeado)
+        
         register_button = ft.ElevatedButton(
             content=ft.Text("Registrarse", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD),
             width=350, 
@@ -106,14 +106,14 @@ class RegisterView:
             style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8))
         )
 
-        # Botón volver (Azul)
+        
         back_button = ft.TextButton(
             content=ft.Text("¿Ya tienes cuenta? Inicia sesión", color=ft.Colors.BLUE_700),
             width=350, 
             on_click=self.on_back_click
         )
 
-        # Imagen del Logo
+        
         logo_image = ft.Image(
             src="./images/banner/logo_login.jpg", 
             width=350,          

@@ -31,7 +31,6 @@ def cargar_restaurantes():
 
     for res in cursor_restaurantes:
         # Extraemos el horario para instanciar su modelo correspondiente
-        # Usamos .get() para evitar errores si el campo no existe
         datos_horario = res.get('horario', {})
         horario_obj = Horario(
             apertura=datos_horario.get('apertura', "00:00"),
@@ -40,7 +39,6 @@ def cargar_restaurantes():
 
         # Instanciamos el objeto Restaurante con los datos de Atlas
         nuevo_restaurante = Restaurante(
-            # Si tu modelo Restaurante usa 'id', mapeamos el '_id' de Mongo
             id=str(res.get('_id')), 
             nombre=res.get('nombre', 'Sin nombre'),
             direccion=res.get('direccion', 'Dirección no disponible'),
@@ -55,8 +53,6 @@ def cargar_restaurantes():
         restaurantes_lista.append(nuevo_restaurante)
 
 
-    # Si la base de datos está vacía, podrías devolver el cache por defecto 
-    # o simplemente la lista (que estaría vacía o llena según la BD)
     return restaurantes_lista if restaurantes_lista else []
 
 
