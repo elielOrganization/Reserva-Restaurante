@@ -1,6 +1,6 @@
 import hashlib
 import os
-from .mongo_service import get_db
+from services.mongo_service import get_db
 from datetime import datetime, timedelta
 from models.restaurant_model import Restaurante
 
@@ -8,7 +8,6 @@ def _hash_password(password: str) -> str:
     salt = os.urandom(16).hex()
     hashed = hashlib.sha256((salt + password).encode("utf-8")).hexdigest()
     return f"{salt}${hashed}"
-
 
 def verify_password(stored: str, password: str) -> bool:
     try:
@@ -43,10 +42,6 @@ def register_user(name: str, username: str, email: str, phone: str, password: st
         return False, f"Error al registrar usuario: {str(ex)}"
 
 def login_user(username: str, password: str) -> tuple[bool, str, str]:
-    """
-    Intenta hacer login con usuario y contraseña
-    Retorna: (success: bool, message: str, username_or_error: str)
-    """
     try:
         db = get_db()
         users = db["Usuarios"]
@@ -66,8 +61,7 @@ def login_user(username: str, password: str) -> tuple[bool, str, str]:
 def registrar_reserva(username: str, fech_hora: str, rest_nombre: str, num_pers: int):
     try:
         db = get_db()
-        # reservas = db["Reservas"]
-
+        
         reserva_doc = {
             "fecha_hora": fech_hora,
             "estado": "confirmada",
@@ -75,8 +69,6 @@ def registrar_reserva(username: str, fech_hora: str, rest_nombre: str, num_pers:
             "num_personas": num_pers,
             "usuario": username,
         }
-
-        # reservas.insert_one(reserva_doc)
 
         db.Restaurantes.update_one(
             {"nombre": rest_nombre},
@@ -92,9 +84,53 @@ def calcular_reservas_disponible(restaurante: Restaurante, fecha: str):
     aforo_max = restaurante.aforo_maximo
     reservas_realizadas = 0
 
-    for reserva in restaurante.reservas:
-        fecha_reserva = reserva["fecha_hora"].split("T")[0]
-        if fecha_reserva == fecha and reserva.get("estado") == "confirmada":
-            reservas_realizadas += reserva["num_personas"]
+    if hasattr(restaurante, 'reservas') and restaurante.reservas:
+        for reserva in restaurante.reservas:
+            fecha_reserva = reserva["fecha_hora"].split("T")[0]
+            if fecha_reserva == fecha and reserva.get("estado") == "confirmada":
+                reservas_realizadas += int(reserva["num_personas"])
     
     return aforo_max - reservas_realizadas
+
+def obtener_reservas_usuario(username: str):
+    try:
+        db = get_db()
+        cursor = db.Restaurantes.find({"reservas.usuario": username})
+        
+        mis_reservas = []
+        
+        for restaurante in cursor:
+            if "reservas" in restaurante:
+                for reserva in restaurante["reservas"]:
+                    if reserva.get("usuario") == username:
+                        reserva_con_nombre = reserva.copy()
+                        if "restaurante_nombre" not in reserva_con_nombre:
+                            reserva_con_nombre["restaurante_nombre"] = restaurante.get("nombre")
+                        mis_reservas.append(reserva_con_nombre)
+                        
+        return mis_reservas
+    except Exception as e:
+        print(f"Error recuperando reservas: {e}")
+        return []
+
+def cancelar_reserva_usuario(username, restaurante_nombre, fecha_hora):
+    try:
+        db = get_db()
+        
+        resultado = db.Restaurantes.update_one(
+            {"nombre": restaurante_nombre},
+            {"$pull": {
+                "reservas": {
+                    "usuario": username, 
+                    "fecha_hora": fecha_hora
+                }
+            }}
+        )
+        
+        if resultado.modified_count > 0:
+            return True, "Reserva cancelada correctamente"
+        else:
+            return False, "No se pudo encontrar la reserva para cancelar"
+            
+    except Exception as e:
+        return False, f"Error al cancelar: {str(e)}"
